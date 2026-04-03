@@ -4,6 +4,7 @@ import io.jsonwebtoken.Jwts;
 import pro.gravit.launchserver.auth.core.User;
 import pro.gravit.utils.helper.SecurityHelper;
 
+import java.security.MessageDigest;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.time.Clock;
@@ -41,8 +42,27 @@ public class LegacySessionHelper {
         if (rawPassword == null) {
             rawPassword = "";
         }
-        return SecurityHelper.toHex(SecurityHelper.digest(SecurityHelper.DigestAlgorithm.SHA256,
-                "%s.%s.%s.%s".formatted(secretSalt, username, rawPassword, secretSalt)));
+        long timestamp = System.currentTimeMillis();
+        String nonce = SecurityHelper.toHex(SecurityHelper.randomBytes(8));
+        String hash = SecurityHelper.toHex(SecurityHelper.digest(SecurityHelper.DigestAlgorithm.SHA256,
+                "%s.%s.%s.%s.%s.%s".formatted(secretSalt, username, rawPassword, secretSalt, timestamp, nonce)));
+        return "%d.%s.%s".formatted(timestamp, nonce, hash);
+    }
+
+    public static boolean verifyRefreshToken(String tokenPayload, String username, String rawPassword, String secretSalt, long maxAgeMillis) {
+        String[] parts = tokenPayload.split("\\.", 3);
+        if (parts.length != 3) return false;
+        try {
+            long timestamp = Long.parseLong(parts[0]);
+            if (System.currentTimeMillis() - timestamp > maxAgeMillis) return false;
+            String nonce = parts[1];
+            if (rawPassword == null) rawPassword = "";
+            String expectedHash = SecurityHelper.toHex(SecurityHelper.digest(SecurityHelper.DigestAlgorithm.SHA256,
+                    "%s.%s.%s.%s.%s.%s".formatted(secretSalt, username, rawPassword, secretSalt, timestamp, nonce)));
+            return MessageDigest.isEqual(expectedHash.getBytes(), parts[2].getBytes());
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     public record JwtTokenInfo(String username, UUID uuid) {

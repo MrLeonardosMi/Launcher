@@ -379,7 +379,7 @@ public class LauncherBackendImpl implements LauncherBackendAPI, TextureUploadExt
 
     @Override
     public String getUsername() {
-        return selfUser == null ? "Player" : getUsername();
+        return selfUser == null ? "Player" : selfUser.getUsername();
     }
 
     @Override

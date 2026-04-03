@@ -85,11 +85,12 @@ public class Downloader {
         return sslSocketFactory;
     }
 
-    public static SSLContext makeSSLContext() throws NoSuchAlgorithmException, CertificateException, KeyStoreException, IOException, KeyManagementException {
+    public static synchronized SSLContext makeSSLContext() throws NoSuchAlgorithmException, CertificateException, KeyStoreException, IOException, KeyManagementException {
         if (sslContext != null) return sslContext;
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, CertificatePinningTrustManager.getTrustManager().getTrustManagers(), new SecureRandom());
-        return sslContext;
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        ctx.init(null, CertificatePinningTrustManager.getTrustManager().getTrustManagers(), new SecureRandom());
+        sslContext = ctx;
+        return ctx;
     }
 
     public static Downloader downloadFile(URI uri, Path path, ExecutorService executor) {

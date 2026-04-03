@@ -141,7 +141,7 @@ public class MySQLCoreProvider extends AbstractSQLCoreProvider implements AuthSu
             try (ResultSet set = s.executeQuery()) {
                 while (set.next()) {
                     MySQLUserHardware hw = fetchHardwareInfo(set);
-                    if (compareHardwareInfo(hw.getHardwareInfo(), info).compareLevel > criticalCompareLevel) {
+                    if (compareHardwareInfo(hw.getHardwareInfo(), info).compareLevel >= criticalCompareLevel) {
                         return hw;
                     }
                 }
@@ -155,7 +155,7 @@ public class MySQLCoreProvider extends AbstractSQLCoreProvider implements AuthSu
              ResultSet set = s.executeQuery()) {
             while (set.next()) {
                 MySQLUserHardware hw = fetchHardwareInfo(set);
-                if (compareHardwareInfo(hw.getHardwareInfo(), info).compareLevel > criticalCompareLevel) {
+                if (compareHardwareInfo(hw.getHardwareInfo(), info).compareLevel >= criticalCompareLevel) {
                     return hw;
                 }
             }

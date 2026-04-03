@@ -212,12 +212,13 @@ public abstract class AbstractSQLCoreProvider extends AuthCoreProvider implement
         SQLUser user = (SQLUser) getUserByUsername(parts[0]);
         if (user == null || user.password == null) return null;
 
-        String expected = LegacySessionHelper.makeRefreshTokenFromPassword(
-                parts[0], user.password, server.keyAgreementManager.legacySalt);
-        if (!expected.equals(parts[1])) return null;
+        if (!LegacySessionHelper.verifyRefreshToken(
+                parts[1], parts[0], user.password,
+                server.keyAgreementManager.legacySalt, 30L * 24 * 60 * 60 * 1000)) return null;
 
         var accessToken = makeAccessToken(user);
-        return new AuthManager.AuthReport(null, accessToken, refreshToken, expireSeconds, createSession(user));
+        var newRefreshToken = makeRefreshToken(user);
+        return new AuthManager.AuthReport(null, accessToken, newRefreshToken, expireSeconds, createSession(user));
     }
 
     @Override

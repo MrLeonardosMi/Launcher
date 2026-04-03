@@ -52,6 +52,7 @@ public class AuthManager {
                 .claim("authId", authId)
                 .claim("tokenType", "checkServer")
                 .claim("isPublic", publicOnly)
+                .expiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000L))
                 .signWith(server.keyAgreementManager.ecdsaPrivateKey)
                 .compact();
     }
