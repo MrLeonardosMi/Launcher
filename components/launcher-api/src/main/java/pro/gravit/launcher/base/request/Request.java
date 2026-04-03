@@ -15,10 +15,7 @@ import pro.gravit.launcher.base.request.websockets.WebSocketRequest;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
@@ -27,8 +24,8 @@ public abstract class Request<R extends WebSocketEvent> implements WebSocketRequ
     private static final Logger logger =
             LoggerFactory.getLogger(Request.class);
 
-    private static final List<ExtendedTokenCallback> extendedTokenCallbacks = new ArrayList<>(4);
-    private static final List<BiConsumer<String, AuthRequestEvent.OAuthRequestEvent>> oauthChangeHandlers = new ArrayList<>(4);
+    private static final List<ExtendedTokenCallback> extendedTokenCallbacks = new CopyOnWriteArrayList<>();
+    private static final List<BiConsumer<String, AuthRequestEvent.OAuthRequestEvent>> oauthChangeHandlers = new CopyOnWriteArrayList<>();
 
     private static volatile RequestService requestService;
     private static volatile AuthRequestEvent.OAuthRequestEvent oauth;
@@ -121,14 +118,14 @@ public abstract class Request<R extends WebSocketEvent> implements WebSocketRequ
         }
     }
 
-    public static void addExtendedToken(String name, ExtendedToken token) {
+    public static synchronized void addExtendedToken(String name, ExtendedToken token) {
         if (extendedTokens == null) {
             extendedTokens = new ConcurrentHashMap<>();
         }
         extendedTokens.put(name, token);
     }
 
-    public static void addAllExtendedToken(Map<String, ExtendedToken> map) {
+    public static synchronized void addAllExtendedToken(Map<String, ExtendedToken> map) {
         if (extendedTokens == null) {
             extendedTokens = new ConcurrentHashMap<>();
         }

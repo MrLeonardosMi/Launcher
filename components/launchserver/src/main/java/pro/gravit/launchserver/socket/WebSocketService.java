@@ -43,7 +43,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 
-public class WebSocketService {
+public class WebSocketService implements AutoCloseable {
     public static final ProviderMap<WebSocketServerResponse> providers = new ProviderMap<>();
     public final ChannelGroup channels;
     public final HookSet<WebSocketRequestContext> hookBeforeParsing = new HookSet<>();
@@ -208,7 +208,7 @@ public class WebSocketService {
         if (logger.isTraceEnabled()) {
             logger.trace("Send to channel {}: {}", getIPFromChannel(channel), msg);
         }
-        channel.writeAndFlush(new TextWebSocketFrame(msg), channel.voidPromise());
+        channel.writeAndFlush(new TextWebSocketFrame(msg)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
     }
 
     public void sendObject(Channel channel, Object obj, Type type) {
@@ -219,7 +219,7 @@ public class WebSocketService {
         if (logger.isTraceEnabled()) {
             logger.trace("Send to channel {}: {}", getIPFromChannel(channel), msg);
         }
-        channel.writeAndFlush(new TextWebSocketFrame(msg), channel.voidPromise());
+        channel.writeAndFlush(new TextWebSocketFrame(msg)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
     }
 
     public void sendObjectAll(Object obj, Type type) {
@@ -242,7 +242,7 @@ public class WebSocketService {
             if (logger.isTraceEnabled()) {
                 logger.trace("Send to {}({}): {}", getIPFromChannel(ch), userUuid, msg);
             }
-            ch.writeAndFlush(new TextWebSocketFrame(msg), ch.voidPromise());
+            ch.writeAndFlush(new TextWebSocketFrame(msg)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         }
     }
 
@@ -342,6 +342,13 @@ public class WebSocketService {
             this.client = client;
             this.ip = ip;
             this.connectUUID = connectUUID;
+        }
+    }
+
+    @Override
+    public void close() {
+        if (executors != null) {
+            executors.shutdownNow();
         }
     }
 

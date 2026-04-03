@@ -33,6 +33,7 @@ import pro.gravit.launchserver.socket.response.auth.AuthResponse;
 import pro.gravit.utils.helper.SecurityHelper;
 
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.sql.*;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -294,7 +295,9 @@ public abstract class AbstractSQLCoreProvider extends AuthCoreProvider implement
     public User checkServer(Client client, String username, String serverID) {
         SQLUser user = (SQLUser) getUserByUsername(username);
         if (user == null) return null;
-        return user.getUsername().equals(username) && user.getServerId().equals(serverID) ? user : null;
+        return user.getUsername().equals(username)
+                && MessageDigest.isEqual(
+                        user.getServerId().getBytes(), serverID.getBytes()) ? user : null;
     }
 
     @Override
@@ -305,7 +308,10 @@ public abstract class AbstractSQLCoreProvider extends AuthCoreProvider implement
         boolean identityMatch = uuid == null
                 ? user.getUsername().equals(username)
                 : user.getUUID().equals(uuid);
-        return identityMatch && user.getAccessToken().equals(accessToken) && updateServerID(user, serverID);
+        return identityMatch
+                && MessageDigest.isEqual(
+                        user.getAccessToken().getBytes(), accessToken.getBytes())
+                && updateServerID(user, serverID);
     }
 
     // -------------------------------------------------------------------------

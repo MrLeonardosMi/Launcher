@@ -198,6 +198,10 @@ public class FileServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         }
 
         File file = base.resolve(path).toFile();
+        if (!file.toPath().toAbsolutePath().normalize().startsWith(base.toAbsolutePath().normalize())) {
+            sendError(ctx, FORBIDDEN);
+            return;
+        }
         if ((file.isHidden() && !showHiddenFiles) || !file.exists()) {
             sendError(ctx, NOT_FOUND);
             return;

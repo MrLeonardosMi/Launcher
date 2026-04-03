@@ -12,7 +12,8 @@ import pro.gravit.utils.helper.JVMHelper;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,8 +26,8 @@ public class StdWebSocketService extends ClientWebSocketService implements Reque
 
     @SuppressWarnings("rawtypes")
     private final ConcurrentHashMap<UUID, CompletableFuture> futureMap = new ConcurrentHashMap<>();
-    private final HashSet<RequestService.EventHandler> eventHandlers = new HashSet<>();
-    private final HashSet<ClientWebSocketService.EventHandler> legacyEventHandlers = new HashSet<>();
+    private final Set<RequestService.EventHandler> eventHandlers = new CopyOnWriteArraySet<>();
+    private final Set<ClientWebSocketService.EventHandler> legacyEventHandlers = new CopyOnWriteArraySet<>();
 
     public StdWebSocketService(String address) throws SSLException {
         super(address);

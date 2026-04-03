@@ -10,10 +10,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractLimiter<T> extends Component implements Reconfigurable {
     public final List<T> exclude = new ArrayList<>();
-    protected final transient Map<T, LimitEntry> map = new HashMap<>();
+    protected final transient Map<T, LimitEntry> map = new ConcurrentHashMap<>();
     private transient final Logger logger = LogManager.getLogger();
     public int rateLimit;
     public long rateLimitMillis;
